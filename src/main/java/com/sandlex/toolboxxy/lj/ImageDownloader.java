@@ -9,11 +9,11 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * /Users/sandlex/dev/sandlex.com/blog/content
+ * Downloads images from posts.
  */
 public class ImageDownloader {
 
@@ -24,18 +24,37 @@ public class ImageDownloader {
         Files.list(postsDir.toPath())
                 .filter(post -> post.toFile().getName().equals("524093.md"))
                 .forEach(post -> {
-                    List<String> imageLinks = extractImageUrls(post);
                     try {
-                        downloadImages(contentDir + "/images", getPostId(post), imageLinks);
+                        List<String> imageLinks = extractImageUrls(post);
+                        if (!imageLinks.isEmpty()) {
+                            downloadImages(contentDir + "/images", getPostId(post), imageLinks);
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 });
     }
 
-    private static List<String> extractImageUrls(Path sourceFile) {
-//        return Collections.singletonList("https://ic.pics.livejournal.com/sandlex/4594610/227262/227262_original.jpg");
-        return Collections.singletonList("http://images24.fotki.com/v872/photos/9/918209/5011253/IMG_9445_hf_hf-vi.jpg");
+    private static List<String> extractImageUrls(Path sourceFile) throws IOException {
+        List<String> result = new ArrayList<>();
+
+        String content = new String(Files.readAllBytes(sourceFile));
+
+        int searchPosition = 0;
+
+        while (true) {
+            int foundPosition = content.indexOf("<img", searchPosition);
+            if (foundPosition == -1) {
+                break;
+            } else {
+                int srcPosition = content.indexOf("src=\"", foundPosition) + 5;
+                String src = content.substring(srcPosition, content.indexOf("\"", srcPosition));
+                result.add(src);
+                searchPosition = foundPosition + 1;
+            }
+        }
+
+        return result;
     }
 
     private static void downloadImages(String imagesDir, String postId, List<String> imageUrls) throws IOException {
