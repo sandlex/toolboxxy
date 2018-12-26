@@ -21,20 +21,25 @@ public class ImageDownloader {
         File postsDir = new File(contentDir + "/posts");
 
         Files.list(postsDir.toPath())
-                .filter(post -> post.toFile().getName().equals("524093.md"))
+                .filter(post -> post.toFile().isFile())
                 .forEach(post -> {
                     try {
+                        String postId = getPostId(post);
+                        System.out.println("Processing post " + postId + "...");
                         List<String> imageLinks = extractImageUrls(post);
                         if (!imageLinks.isEmpty()) {
-                            String postId = getPostId(post);
                             String imagesDir = contentDir + "/images";
                             File imageDir = new File(imagesDir + "/" + postId);
                             if (Files.exists(imageDir.toPath())) {
-                                System.out.println("Image dir exists, skipping post " + postId);
+                                System.out.println("image dir exists, skipping");
                             } else {
                                 downloadImages(imagesDir, postId, imageLinks);
                             }
+                        } else {
+                            System.out.println("no images");
                         }
+                        System.out.println("done with the post " + postId);
+                        System.out.println();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -60,6 +65,7 @@ public class ImageDownloader {
             }
         }
 
+        System.out.println("found images: " + result.size());
         return result;
     }
 
@@ -67,10 +73,13 @@ public class ImageDownloader {
         File imageDir = new File(imagesDir + "/" + postId);
         Files.createDirectory(imageDir.toPath());
         int index = 0;
+        int total = imageUrls.size();
         for (String imageUrl : imageUrls) {
+            System.out.println("downloading image " + (index + 1) + "/" + total);
             downloadImage(imagesDir, postId, index, imageUrl);
             index++;
         }
+        System.out.println("all images downloaded");
     }
 
     private static void downloadImage(String imagesDir, String postId, int index, String imageUrl) {
@@ -78,14 +87,19 @@ public class ImageDownloader {
         try (InputStream is = new URL(imageUrl).openStream()) {
             Files.copy(is, targetFile);
         } catch (FileNotFoundException e) {
-            System.out.println("file not found: " + postId + " -> " + imageUrl);
-            try {
-                Files.copy(Paths.get(imagesDir + "/image-not-found.png"), targetFile);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+            copyImagePlaceholder(postId, imageUrl, imagesDir, targetFile);
         } catch (IOException e) {
+            copyImagePlaceholder(postId, imageUrl, imagesDir, targetFile);
             e.printStackTrace();
+        }
+    }
+
+    private static void copyImagePlaceholder(String postId, String imageUrl, String imagesDir, Path targetFile) {
+        System.out.println("file not found: " + postId + " -> " + imageUrl);
+        try {
+            Files.copy(Paths.get(imagesDir + "/image-not-found.png"), targetFile);
+        } catch (IOException e1) {
+            e1.printStackTrace();
         }
     }
 
