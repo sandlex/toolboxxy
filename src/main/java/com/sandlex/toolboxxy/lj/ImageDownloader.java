@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,7 +26,14 @@ public class ImageDownloader {
                     try {
                         List<String> imageLinks = extractImageUrls(post);
                         if (!imageLinks.isEmpty()) {
-                            downloadImages(contentDir + "/images", getPostId(post), imageLinks);
+                            String postId = getPostId(post);
+                            String imagesDir = contentDir + "/images";
+                            File imageDir = new File(imagesDir + "/" + postId);
+                            if (Files.exists(imageDir.toPath())) {
+                                System.out.println("Image dir exists, skipping post " + postId);
+                            } else {
+                                downloadImages(imagesDir, postId, imageLinks);
+                            }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -58,7 +64,8 @@ public class ImageDownloader {
     }
 
     private static void downloadImages(String imagesDir, String postId, List<String> imageUrls) throws IOException {
-        prepareDirectory(imagesDir, postId);
+        File imageDir = new File(imagesDir + "/" + postId);
+        Files.createDirectory(imageDir.toPath());
         int index = 0;
         for (String imageUrl : imageUrls) {
             downloadImage(imagesDir, postId, index, imageUrl);
@@ -66,33 +73,12 @@ public class ImageDownloader {
         }
     }
 
-    private static void prepareDirectory(String imagesDir, String postId) throws IOException {
-        File imageDir = new File(imagesDir + "/" + postId);
-        try {
-            Files.deleteIfExists(imageDir.toPath());
-        } catch (DirectoryNotEmptyException ex) {
-            cleanAndDeleteDir(imageDir);
-        }
-        Files.createDirectory(imageDir.toPath());
-    }
-
-    private static void cleanAndDeleteDir(File imageDir) throws IOException {
-        Files.list(imageDir.toPath()).forEach(file -> {
-            try {
-                Files.delete(file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        Files.delete(imageDir.toPath());
-    }
-
     private static void downloadImage(String imagesDir, String postId, int index, String imageUrl) {
         Path targetFile = Paths.get(getTargetFileName(imagesDir, postId, index, imageUrl));
         try (InputStream is = new URL(imageUrl).openStream()) {
             Files.copy(is, targetFile);
         } catch (FileNotFoundException e) {
-            System.out.println(postId + " -> " + imageUrl);
+            System.out.println("file not found: " + postId + " -> " + imageUrl);
             try {
                 Files.copy(Paths.get(imagesDir + "/image-not-found.png"), targetFile);
             } catch (IOException e1) {
