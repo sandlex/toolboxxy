@@ -16,9 +16,9 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Converter of lj export files into markdown.
+ * Converts files produced by livejournal export tool (csv file per month) into markdown files (file per post).
  */
-public class Converter {
+public class PostConverter {
 
     public static void main(String[] args) throws IOException {
         String sourceDir = args[0];
