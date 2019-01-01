@@ -20,7 +20,6 @@ public class ImageReplacer {
 
         Files.list(postsDir.toPath())
                 .filter(post -> post.toFile().isFile())
-                .filter(post -> post.toFile().getName().equals("524093.md"))
                 .forEach(post -> {
                     try {
                         String postId = getPostId(post);
@@ -66,10 +65,12 @@ public class ImageReplacer {
         return result;
     }
 
-    private static void replaceImageTags(Path sourceFile, String postId, Path postImagesDir, List<String> imageTags) throws IOException {
-        String content = new String(Files.readAllBytes(sourceFile));
+    private static void replaceImageTags(Path post, String postId, Path postImagesDir, List<String> imageTags) throws IOException {
+        String content = new String(Files.readAllBytes(post));
 
-        if (Files.list(postImagesDir).filter(file -> file.toFile().isFile()).count() != imageTags.size()) {
+        if (Files.list(postImagesDir)
+                .filter(file -> file.toFile().isFile()
+                        && file.toFile().getName().startsWith(postId + "_")).count() != imageTags.size()) {
             System.out.println("ERROR: number of images doesn't match number of tags");
             return;
         }
@@ -82,6 +83,7 @@ public class ImageReplacer {
                 System.out.println(imageTag + " -> " + mdTag);
                 index++;
             }
+            Files.write(post, content.getBytes());
         } catch (RuntimeException e) {
             System.out.println("ERROR: " + e.getMessage());
         }
@@ -94,7 +96,7 @@ public class ImageReplacer {
                 .findFirst();
 
         if (image.isPresent()) {
-            return "../images/" + postId + "/" + image.get().toFile().getName();
+            return "images/" + postId + "/" + image.get().toFile().getName();
         }
 
         throw new RuntimeException("no file matching " + partialFileName);
