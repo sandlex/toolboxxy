@@ -20,6 +20,18 @@ import java.util.stream.StreamSupport;
  */
 public class PostConverter {
 
+    public static final int INDEX_ITEM_ID = 0;
+    public static final int INDEX_EVENT_TIME = 1;
+    public static final int INDEX_LOG_TIME = 2;
+    public static final int INDEX_SUBJECT = 3;
+    public static final int INDEX_EVENT = 4;
+    public static final int INDEX_SECURITY = 5;
+    public static final int INDEX_ALLOW_MASK = 6;
+    public static final int INDEX_CURRENT_MUSIC = 7;
+    public static final int INDEX_CURRENT_MOOD = 8;
+
+
+
     public static void main(String[] args) throws IOException {
         String sourceDir = args[0];
         File dir = new File(sourceDir);
@@ -47,7 +59,7 @@ public class PostConverter {
         Iterable<String[]> iterable = () -> it;
         Stream<String[]> targetStream = StreamSupport.stream(iterable.spliterator(), false);
         targetStream.forEach(post -> {
-            File nf = new File(sourceDir + "/md/" + post[0] + ".md");
+            File nf = new File(sourceDir + "/md/" + post[INDEX_ITEM_ID] + ".md");
             try {
                 Path f = Files.createFile(nf.toPath());
                 byte[] buf = getFileContent(post).getBytes();
@@ -68,8 +80,8 @@ public class PostConverter {
                         "music = \"%s\"" + separator +
                         "mood = \"%s\"" + separator +
                         "+++" + separator + separator +
-                        "%s", input[2], input[1].replace(" ", "T"),
-                input[5], input[6], input[3]);
+                        "%s", input[INDEX_SUBJECT], input[INDEX_EVENT_TIME].replace(" ", "T"),
+                input[INDEX_CURRENT_MUSIC], input[INDEX_CURRENT_MOOD], input[INDEX_EVENT]);
     }
 
 }

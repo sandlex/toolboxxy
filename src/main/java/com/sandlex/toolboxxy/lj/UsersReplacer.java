@@ -24,7 +24,7 @@ public class UsersReplacer {
                     try {
                         String postId = getPostId(post);
                         System.out.println("Processing post " + postId + "...");
-                        List<String> links = extracUserTags(post);
+                        List<String> links = extractUserTags(post);
                         if (links.isEmpty()) {
                             System.out.println("no links");
                         } else {
@@ -43,7 +43,7 @@ public class UsersReplacer {
         return fileName.substring(0, fileName.indexOf("."));
     }
 
-    private static List<String> extracUserTags(Path sourceFile) throws IOException {
+    private static List<String> extractUserTags(Path sourceFile) throws IOException {
         List<String> result = new ArrayList<>();
 
         String content = new String(Files.readAllBytes(sourceFile));

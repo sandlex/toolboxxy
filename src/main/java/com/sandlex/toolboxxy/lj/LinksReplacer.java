@@ -97,6 +97,9 @@ public class LinksReplacer {
         if (link.url.contains("http://sandlex.livejournal.com/")) {
             link.url = link.url.replace("http://sandlex.livejournal.com/", "")
                     .replace(".html", ".md");
+        } else if (link.url.contains("https://sandlex.livejournal.com/")) {
+            link.url = link.url.replace("https://sandlex.livejournal.com/", "")
+                    .replace(".html", ".md");
         }
 
         return link;

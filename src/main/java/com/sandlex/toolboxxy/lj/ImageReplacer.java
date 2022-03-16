@@ -78,7 +78,7 @@ public class ImageReplacer {
         try {
             int index = 0;
             for (String imageTag : imageTags) {
-                String mdTag = "![](" + getImageFileName(postImagesDir, postId, index) + ")";
+                String mdTag = "![[" + getImageFileName(postImagesDir, postId, index) + "]]";
                 content = content.replace(imageTag, mdTag);
                 System.out.println(imageTag + " -> " + mdTag);
                 index++;
